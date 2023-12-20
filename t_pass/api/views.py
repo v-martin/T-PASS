@@ -9,6 +9,8 @@ from services.infrastructure.booking_db import get_bookings_by_user, deactivate_
 
 
 class StageViewSet(viewsets.ModelViewSet):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
     queryset = Stage.objects.all()
     serializer_class = StageSerializer
 

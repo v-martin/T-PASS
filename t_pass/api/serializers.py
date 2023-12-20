@@ -3,7 +3,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from .models import Stage, Booking
 from services.infrastructure.booking_db import create_booking
-from services.domain.schedule import is_valid_actual, are_overlapping
+from services.domain.schedule import is_valid_actual, check_constraints
 
 
 class StageSerializer(serializers.ModelSerializer):
@@ -29,11 +29,9 @@ class BookingSerializer(serializers.ModelSerializer):
         if not is_valid_actual(instance.date, instance.start_time):
             raise ValidationError('Stages can not be booked on the past time.')
 
-        if instance.active and are_overlapping(instance.stage, instance.date,
-                                               instance.start_time, instance.finish_time):
-            raise ValidationError('Booking time overlaps with an existing booking.')
-
-        return instance
+        if check_constraints({'stage': instance.stage, 'date': instance.date,
+                              'start_time': instance.start_time, 'finish_time': instance.finish_time}):
+            return instance
 
     def to_representation(self, instance):
         if not is_valid_actual(instance.date, instance.finish_time):
@@ -45,8 +43,5 @@ class BookingSerializer(serializers.ModelSerializer):
         if not is_valid_actual(validated_data['date'], validated_data['start_time']):
             raise ValidationError('Stages can not be booked on the past time.')
 
-        if are_overlapping(validated_data):
-            raise ValidationError('Booking time overlaps with an existing booking.')
-
-        return create_booking(self.context['request'].user, validated_data)
-
+        if check_constraints(validated_data):
+            return create_booking(self.context['request'].user, validated_data)
