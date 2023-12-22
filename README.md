@@ -4,6 +4,7 @@
 
 Документация openAPI (Swagger):
 
+<pre>
 openapi: 3.0.3
 info:
   title: T-PASS API
@@ -796,4 +797,4 @@ components:
       in: header
       name: Authorization
       description: Token-based authentication with required prefix "Token"
-
+</pre>

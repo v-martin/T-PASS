@@ -80,3 +80,4 @@ class BookingViewSetTestCase(APITestCase):
         response = self.client.patch('/api/deactivate-bookings/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertFalse(Booking.objects.get(id=booking.id).active)
+
