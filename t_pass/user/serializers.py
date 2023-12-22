@@ -1,6 +1,5 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from services.infrastructure.user_db import create_user
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -8,7 +7,3 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ('username', 'password', 'email')
         extra_kwargs = {'password': {'write_only': True}}
-
-    def create(self, validated_data):
-        user = create_user(validated_data)
-        return user

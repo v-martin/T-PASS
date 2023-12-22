@@ -1,12 +1,20 @@
 from django.utils import timezone
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
-from .models import Stage, Booking
-from services.infrastructure.booking_db import create_booking
+from .models import Stage, Booking, Service
+from services.infrastructure.api_db import create_booking, get_all_services, get_all_stages
 from services.domain.schedule import is_valid_actual, check_constraints
 
 
+class ServiceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Service
+        fields = '__all__'
+
+
 class StageSerializer(serializers.ModelSerializer):
+    services = serializers.PrimaryKeyRelatedField(many=True, queryset=get_all_services())
+
     class Meta:
         model = Stage
         fields = '__all__'
@@ -19,6 +27,7 @@ class BookingSerializer(serializers.ModelSerializer):
         model = Booking
         fields = '__all__'
 
+    # Update a booking instance. Validates time constraints.
     def update(self, instance, validated_data):
         instance.stage = validated_data.get('stage', instance.stage)
         instance.date = validated_data.get('date', instance.date)
@@ -33,15 +42,20 @@ class BookingSerializer(serializers.ModelSerializer):
                               'start_time': instance.start_time, 'finish_time': instance.finish_time}):
             return instance
 
+    # Represent a booking instance. Deactivates if finish time is in the past.
     def to_representation(self, instance):
         if not is_valid_actual(instance.date, instance.finish_time):
             instance.active = False
 
         return super().to_representation(instance)
 
+    # Create a booking instance. Validates time constraints.
     def create(self, validated_data):
         if not is_valid_actual(validated_data['date'], validated_data['start_time']):
             raise ValidationError('Stages can not be booked on the past time.')
 
-        if check_constraints(validated_data):
-            return create_booking(self.context['request'].user, validated_data)
+        print(validated_data)
+        if not check_constraints(validated_data):
+            raise ValidationError('Booking constraints are not fulfilled.')
+
+        return create_booking(self.context['request'].user, validated_data)
