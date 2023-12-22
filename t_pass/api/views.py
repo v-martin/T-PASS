@@ -72,6 +72,7 @@ class DeactivateAllBookingsView(APIView):
     """
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated, IsAdminUser]
+    # For swagger
     serializer_class = BookingSerializer
 
     def patch(self, request):

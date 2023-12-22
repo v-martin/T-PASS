@@ -30,13 +30,14 @@ class SignUpView(APIView):
     - Returns user details on successful registration.
     """
     permission_classes = [AllowAny]
+    # For swagger
     serializer_class = UserSerializer
 
     def post(self, request):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
-            return Response({'username': user.username, 'email': user.email}, status=status.HTTP_201_CREATED)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -48,6 +49,7 @@ class LogoutView(APIView):
     """
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
+    # For swagger
     serializer_class = UserSerializer
 
     def post(self, request):

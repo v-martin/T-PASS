@@ -54,8 +54,10 @@ class BookingSerializer(serializers.ModelSerializer):
         if not is_valid_actual(validated_data['date'], validated_data['start_time']):
             raise ValidationError('Stages can not be booked on the past time.')
 
-        print(validated_data)
         if not check_constraints(validated_data):
             raise ValidationError('Booking constraints are not fulfilled.')
+
+        if 'request' not in self.context and not self.context['request'].user:
+            raise ValidationError('Could not resolve user of the booking.')
 
         return create_booking(self.context['request'].user, validated_data)
